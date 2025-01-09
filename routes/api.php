@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ArticleController;
 
 Route::controller(AuthController::class)->group(function () {
     Route::post('register', 'register')->name('register');
@@ -14,5 +15,9 @@ Route::controller(AuthController::class)->group(function () {
 });
 
 Route::middleware('auth:sanctum')->group(function () {
+
+    Route::apiResource('articles', ArticleController::class)
+        ->only(['index']);
+
     Route::post('/logout', [AuthController::class, 'logout']);
 });
