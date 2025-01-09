@@ -43,7 +43,7 @@ trait ApiResponder
         ];
 
         if (!empty($errorMessages)) {
-            $response['error'] = $errorMessages;
+            $response['errors'] = $errorMessages;
         }
 
         return response()->json($response, $statusCode);

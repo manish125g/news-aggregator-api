@@ -183,6 +183,7 @@ return [
         ],
         'password' => [
             'min' => 'The password must be at least :min characters.',
+            'confirmed' => 'The password confirmation does not match.',
         ],
     ],
 

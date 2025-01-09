@@ -43,8 +43,20 @@ return Application::configure(basePath: dirname(__DIR__))
                 }
                 if ($e instanceof \Illuminate\Validation\ValidationException) {
                     $response['message'] = 'Validation error.';
-                    $response['error'] = $e->errors();
+                    $response['errors'] = $e->errors();
                     return response()->json($response, 422);
+                }
+                if ($e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
+                    $response['message'] = 'Resource not found.';
+                    return response()->json($response, 404);
+                }
+                if($e instanceof \Illuminate\Database\UniqueConstraintViolationException) {
+                    $response['message'] = 'Database error.';
+                    return response()->json($response, 500);
+                }
+                if ($e instanceof \Illuminate\Database\QueryException) {
+                    $response['message'] = 'Database error.';
+                    return response()->json($response, 500);
                 }
             }
             return app(\Illuminate\Contracts\Debug\ExceptionHandler::class)->render($request, $e);

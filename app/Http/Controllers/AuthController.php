@@ -5,8 +5,13 @@ namespace App\Http\Controllers;
 use App\Http\Requests\RegisterRequest;
 use App\Models\User;
 use App\Traits\ApiResponder;
+use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -15,15 +20,21 @@ class AuthController extends Controller
 
     public function register(RegisterRequest $request): JsonResponse
     {
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => bcrypt($request->password),
-        ]);
-        return $this->sendSuccess('Registration successful', $user, 201);
+        try {
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => bcrypt($request->password),
+            ]);
+            return $this->sendSuccess('Registration successful', $user, 201);
+        } catch (UniqueConstraintViolationException $exception) {
+            return $this->sendError('Email already Exists.', [['email' => __('custom.email.unique')]], 422);
+        } catch (\Exception $ex) {
+            return $this->sendError('An unexpected error occurred', [$ex->getMessage()], 500);
+        }
     }
 
-    public function login(Request $request)
+    public function login(Request $request): JsonResponse
     {
         try {
             $credentials = $request->validate([
@@ -46,6 +57,43 @@ class AuthController extends Controller
         } catch (\Exception $ex) {
             return $this->sendError('An unexpected error occurred', [$ex->getMessage()], 500);
         }
+    }
+
+    public function forgotPassword(Request $request): JsonResponse
+    {
+
+        $request->validate(['email' => 'required|email']);
+        try {
+            $status = Password::sendResetLink(
+                $request->only('email')
+            );
+            return $status === Password::ResetLinkSent ? $this->sendSuccess(__($status)) : $this->sendError(__($status), [], 422);
+        } catch (\Exception $ex) {
+            return $this->sendError('An unexpected error occurred', [$ex->getMessage()], 500);
+        }
+    }
+
+    public function resetPassword(Request $request): JsonResponse
+    {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function (User $user, string $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password)
+                ])->setRememberToken(Str::random(60));
+
+                $user->save();
+
+                event(new PasswordReset($user));
+            }
+        );
+        return $status === Password::PasswordReset ? $this->sendSuccess(__($status)) : $this->sendError(__($status), [], 422);
     }
 
     public function logout(Request $request): JsonResponse
