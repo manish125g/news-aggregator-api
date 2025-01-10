@@ -6,6 +6,7 @@ namespace App\Services\NewsProviders;
 use App\Contracts\NewsProvider;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 
 class GuardianProvider implements NewsProvider
 {
@@ -22,7 +23,7 @@ class GuardianProvider implements NewsProvider
 
         return collect($response->json('response.results'))->map(function ($article) {
             return [
-                'author' => $article['fields']['byline'] ?? 'Unknown',
+                'author' => Str::replaceStart("By ", "", $article['fields']['byline']) ?? 'Unknown',
                 'title' => $article['webTitle'],
                 'source' => 'The Guardian',
                 'source_url' => $article['webUrl'] ?? null,
@@ -31,7 +32,7 @@ class GuardianProvider implements NewsProvider
                 'category' => $article['sectionName'] ?? '',
                 'image_url' => $article['fields']['thumbnail'] ?? null,
                 'content' => $article['fields']['body'] ?? '',
-                'published_at' => Carbon::create($article['publishedAt'])->toDateTimeString(),
+                'published_at' => Carbon::create($article['webPublicationDate'])->toDateTimeString(),
                 'status' => 'published',
             ];
         })->toArray();

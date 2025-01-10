@@ -20,7 +20,7 @@ return new class extends Migration
             $table->text('description');
             $table->string('keywords')->default('')->index();
             $table->string('category')->default('')->index();
-            $table->string('image_url')->nullable();
+            $table->text('image_url')->nullable();
             $table->longText('content');
             $table->timestamp('published_at')->index();
             $table->enum('status', ['draft', 'published', 'archived'])->default('published');
