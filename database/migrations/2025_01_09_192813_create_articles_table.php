@@ -15,14 +15,14 @@ return new class extends Migration
             $table->id();
             $table->string('author')->index();
             $table->string('title');
-            $table->string('source')->index();
-            $table->string('source_url');
+            $table->string('source')->index()->nullable();
+            $table->string('source_url')->nullable();
             $table->text('description');
             $table->string('keywords')->default('')->index();
             $table->string('category')->default('')->index();
             $table->string('image_url')->nullable();
-            $table->timestamp('published_at')->index();
             $table->longText('content');
+            $table->timestamp('published_at')->index();
             $table->enum('status', ['draft', 'published', 'archived'])->default('published');
             $table->timestamps();
         });
