@@ -20,9 +20,9 @@ Route::middleware(['auth:sanctum','throttle:60,1'])->group(function () {
     Route::get('articles', [ArticleController::class, 'index']);
     Route::get('articles/{id}', [ArticleController::class, 'show']);
 
-    Route::get('/preferences', [UserPreferenceController::class, 'show']);
-    Route::post('/preferences', [UserPreferenceController::class, 'store']);
-    Route::get('/personalized-news', [UserPreferenceController::class, 'personalizedFeed']);
+    Route::get('user/preferences', [UserPreferenceController::class, 'show']);
+    Route::post('user/preferences', [UserPreferenceController::class, 'store']);
+    Route::get('user/personalized-feed', [UserPreferenceController::class, 'personalizedFeed']);
 
-    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('logout', [AuthController::class, 'logout']);
 });

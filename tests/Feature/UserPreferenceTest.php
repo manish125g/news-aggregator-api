@@ -19,7 +19,7 @@ class UserPreferenceTest extends TestCase
 
         Article::factory()->create(['category' => 'Technology', 'source' => 'NewsAPI']);
 
-        $response = $this->postJson('/api/preferences', [
+        $response = $this->postJson('/api/user/preferences', [
             'sources' => ['NewsAPI', 'New York Times', 'The Guardian'],
             'categories' => ['Technology'],
         ]);
@@ -39,7 +39,7 @@ class UserPreferenceTest extends TestCase
 
         $this->actingAs($user, 'sanctum');
 
-        $response = $this->getJson('/api/preferences');
+        $response = $this->getJson('/api/user/preferences');
 
         $response->assertStatus(200)
             ->assertJsonFragment(['sources' => ['NewsAPI', 'New York Times'], 'categories' => ['Technology']]);
@@ -59,7 +59,7 @@ class UserPreferenceTest extends TestCase
             'categories' => [$uniqueCategory],
         ]);
 
-        $response = $this->getJson('/api/personalized-news');
+        $response = $this->getJson('/api/user/personalized-feed');
 
         $response->assertStatus(200)
             ->assertJsonCount(1, 'data');

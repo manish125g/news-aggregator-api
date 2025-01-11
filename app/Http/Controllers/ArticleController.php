@@ -11,10 +11,111 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
+/**
+ * @OA\Tag(
+ *     name="Article",
+ *     description="Operations related to articles"
+ * )
+ */
 class ArticleController extends Controller
 {
     use ApiResponder;
 
+    /**
+     * @OA\Get(
+     *     path="/api/articles",
+     *     summary="Fetch articles with optional filters and pagination",
+     *     description="Retrieve a list of articles based on various filters like keyword, category, source, date range, sorting, and ordering. Caching is used for optimization.",
+     *     tags={"Articles"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="keyword",
+     *         in="query",
+     *         description="Search keyword to filter articles by title or content",
+     *         required=false,
+     *         @OA\Schema(type="string", maxLength=255)
+     *     ),
+     *     @OA\Parameter(
+     *         name="category",
+     *         in="query",
+     *         description="Filter articles by category (array of category values)",
+     *         required=false,
+     *         @OA\Schema(type="array", @OA\Items(type="string"))
+     *     ),
+     *     @OA\Parameter(
+     *         name="source",
+     *         in="query",
+     *         description="Filter articles by source (array of source values)",
+     *         required=false,
+     *         @OA\Schema(type="array", @OA\Items(type="string"))
+     *     ),
+     *     @OA\Parameter(
+     *         name="start_date",
+     *         in="query",
+     *         description="Filter articles published after or on this date (YYYY-MM-DD)",
+     *         required=false,
+     *         @OA\Schema(type="string", format="date")
+     *     ),
+     *     @OA\Parameter(
+     *         name="end_date",
+     *         in="query",
+     *         description="Filter articles published before or on this date (YYYY-MM-DD)",
+     *         required=false,
+     *         @OA\Schema(type="string", format="date")
+     *     ),
+     *     @OA\Parameter(
+     *         name="sort_by",
+     *         in="query",
+     *         description="Sort articles by a specific field. Possible values: title, published_at, category",
+     *         required=false,
+     *         @OA\Schema(type="string", enum={"title", "published_at", "category"})
+     *     ),
+     *     @OA\Parameter(
+     *         name="sort_order",
+     *         in="query",
+     *         description="Sort order for the articles. Possible values: asc, desc",
+     *         required=false,
+     *         @OA\Schema(type="string", enum={"asc", "desc"})
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(ref="#/components/schemas/ArticleResource")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="No articles found",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="No articles found.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Validation Error."),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Unexpected error",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="An unexpected error occurred")
+     *         )
+     *     )
+     * )
+     */
     public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
         try {
@@ -56,6 +157,39 @@ class ArticleController extends Controller
         }
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/articles/{id}",
+     *     summary="Fetch a single article by ID",
+     *     description="Retrieve the details of a specific article by its ID. The response is cached for 10 minutes to optimize performance.",
+     *     tags={"Articles"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="The ID of the article to retrieve",
+     *         required=true,
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Article found."),
+     *             @OA\Property(property="data", ref="#/components/schemas/ArticleResource")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Article not found",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="No query results for model [Article] with ID {id}.")
+     *         )
+     *     )
+     * )
+     */
     public function show(Request $request, $id): JsonResponse
     {
         if (Cache::has('article_' . $id)) {
