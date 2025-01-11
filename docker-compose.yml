@@ -1,0 +1,42 @@
+services:
+    app:
+        build:
+            context: .
+        image: news-api
+        container_name: news-api
+        ports:
+            - "8000:80"
+        volumes:
+            - .:/var/www/html
+        networks:
+            - app-network
+        depends_on:
+            - db
+
+    scheduler:
+        image: news-api
+        container_name: scheduler
+        command: [ "sh", "-c", "while true; do php /var/www/html/artisan schedule:run --no-interaction --verbose; sleep 60; done" ]
+        volumes:
+            - .:/var/www/html
+        depends_on:
+            - app
+        networks:
+            - app-network
+
+    db:
+        image: mysql:8.0
+        container_name: mysql
+        environment:
+            MYSQL_ROOT_PASSWORD: Test@1101
+            MYSQL_DATABASE: news
+            MYSQL_USER: news-user
+            MYSQL_PASSWORD: Test@1101
+        ports:
+            - "3307:3306"
+        networks:
+            - app-network
+
+networks:
+    app-network:
+        driver: bridge
