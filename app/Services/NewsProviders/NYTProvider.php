@@ -21,7 +21,7 @@ class NYTProvider implements NewsProvider
 
         return collect($response->json('results'))->map(function ($article) {
             return [
-                'author' => Str::replaceStart("By ", "", $article['byline']) ?? 'Unknown',
+                'author' => !empty($article['byline']) ? Str::replaceStart("By ", "", $article['byline']) : 'Unknown',
                 'title' => $article['title'],
                 'source' => 'New York Times',
                 'source_url' => $article['url'] ?? null,

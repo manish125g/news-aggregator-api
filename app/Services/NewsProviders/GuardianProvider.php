@@ -23,7 +23,7 @@ class GuardianProvider implements NewsProvider
 
         return collect($response->json('response.results'))->map(function ($article) {
             return [
-                'author' => Str::replaceStart("By ", "", $article['fields']['byline']) ?? 'Unknown',
+                'author' => !empty($article['fields']['byline']) ? Str::replaceStart("By ", "", $article['fields']['byline']) : 'Unknown',
                 'title' => $article['webTitle'],
                 'source' => 'The Guardian',
                 'source_url' => $article['webUrl'] ?? null,

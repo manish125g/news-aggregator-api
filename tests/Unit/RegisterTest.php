@@ -11,6 +11,11 @@ class RegisterTest extends TestCase
 {
     public function test_user_can_register_with_valid_data()
     {
+        // Deleting the user if exists
+        $user = User::where('email', 'johndoe@example.com')->first();
+        if ($user) {
+            $user->delete();
+        }
         $response = $this->postJson('/api/register', [
             'name' => 'John Doe',
             'email' => 'johndoe@example.com',
@@ -26,6 +31,12 @@ class RegisterTest extends TestCase
 
     public function test_registration_fails_with_duplicate_email()
     {
+        // Deleting the user if exists
+        $user = User::where('email', 'johndoe0@example.com')->first();
+        if ($user) {
+            $user->delete();
+        }
+
         User::factory()->create(['email' => 'johndoe0@example.com']);
 
         $response = $this->postJson('/api/register', [
@@ -65,6 +76,12 @@ class RegisterTest extends TestCase
 
     public function test_user_can_login_with_valid_credentials()
     {
+        // Deleting the user if exists
+        $user = User::where('email', 'johndoe1@example.com')->first();
+        if ($user) {
+            $user->delete();
+        }
+
         $user = \App\Models\User::factory()->create([
             'email' => 'johndoe1@example.com',
             'password' => bcrypt('password123'),
@@ -86,6 +103,12 @@ class RegisterTest extends TestCase
 
     public function test_login_fails_with_invalid_credentials()
     {
+        // Deleting the user if exists
+        $user = User::where('email', 'johndoe2@example.com')->first();
+        if ($user) {
+            $user->delete();
+        }
+
         \App\Models\User::factory()->create([
             'email' => 'johndoe2@example.com',
             'password' => bcrypt('password123'),
@@ -102,9 +125,13 @@ class RegisterTest extends TestCase
 
     public function test_forgot_password_sends_email_for_valid_user()
     {
-        Mail::fake();
+        // Deleting the user if exists
+        $user = User::where('email', 'johndoe3@example.com')->first();
+        if ($user) {
+            $user->delete();
+        }
 
-        $user = User::factory()->create(['email' => 'johndoe3@example.com']);
+        User::factory()->create(['email' => 'johndoe3@example.com']);
 
         $response = $this->postJson('/api/forgot-password', ['email' => 'johndoe3@example.com']);
 
@@ -131,9 +158,15 @@ class RegisterTest extends TestCase
 
     public function test_password_reset_works_with_valid_token()
     {
+        // Deleting the user if exists
+        $user = User::where('email', 'johndoe4@example.com')->first();
+        if ($user) {
+            $user->delete();
+        }
+
         Password::shouldReceive('reset')->once()->andReturn(Password::PASSWORD_RESET);
 
-        $user = User::factory()->create(['email' => 'johndoe4@example.com']);
+        User::factory()->create(['email' => 'johndoe4@example.com']);
 
         $response = $this->postJson('/api/reset-password', [
             'email' => 'johndoe4@example.com',
@@ -188,11 +221,8 @@ class RegisterTest extends TestCase
     {
         $user = \App\Models\User::factory()->create();
 
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
-        ])->postJson('/api/logout');
+        $this->actingAs($user, 'sanctum');
+        $response = $this->postJson('/api/logout');
 
         $response->assertStatus(200)
             ->assertJson(['message' => 'Logged out successfully']);

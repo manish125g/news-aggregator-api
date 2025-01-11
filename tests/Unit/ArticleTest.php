@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use App\Models\Article;
 use App\Models\User;
 use Illuminate\Foundation\Testing\TestCase;
+use Illuminate\Support\Str;
 
 class ArticleTest extends TestCase
 {
@@ -13,11 +14,9 @@ class ArticleTest extends TestCase
         Article::factory()->count(15)->create();
 
         $user = User::factory()->create();
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $this->actingAs($user, 'sanctum');
 
-        $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
-        ])->getJson('/api/articles');
+        $response = $this->getJson('/api/articles');
 
         $response->assertStatus(200)
             ->assertJsonStructure(['data', 'links', 'meta']);
@@ -25,15 +24,14 @@ class ArticleTest extends TestCase
 
     public function test_filter_articles_by_keyword()
     {
-        Article::factory()->create(['title' => 'Test News Test Tata']);
+        $uniqueTitle = Str::random();
+        Article::factory()->create(['title' => $uniqueTitle]);
         Article::factory()->create(['title' => 'Other News']);
 
         $user = User::factory()->create();
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $this->actingAs($user, 'sanctum');
 
-        $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
-        ])->getJson('/api/articles?keyword=Test News Test Tata');
+        $response = $this->getJson("/api/articles?keyword=$uniqueTitle");
 
         $response->assertStatus(200)
             ->assertJsonCount(1, 'data');
@@ -44,11 +42,8 @@ class ArticleTest extends TestCase
         $article = Article::factory()->create();
 
         $user = User::factory()->create();
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
-        ])->getJson("/api/articles/{$article->id}");
+        $this->actingAs($user, 'sanctum');
+        $response = $this->getJson("/api/articles/{$article->id}");
 
         $response->assertStatus(200)
             ->assertJson(['data' => [
