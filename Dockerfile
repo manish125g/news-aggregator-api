@@ -4,12 +4,17 @@ FROM php:8.2-apache
 # Install dependencies
 RUN apt-get update && apt-get install -y \
     libpng-dev \
-    libjpeg62-turbo-dev \
-    libfreetype6-dev \
-    zip \
-    git \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_mysql
+        libjpeg62-turbo-dev \
+        libfreetype6-dev \
+        zip \
+        git \
+        libicu-dev \
+        libonig-dev \
+        libzip-dev \
+        unzip \
+        curl \
+        && docker-php-ext-configure gd --with-freetype --with-jpeg \
+        && docker-php-ext-install gd pdo pdo_mysql intl mbstring zip
 
 # Install composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
