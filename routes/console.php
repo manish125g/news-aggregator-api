@@ -12,7 +12,7 @@ Artisan::command('inspire', function () {
 
 Schedule::call(function () {
     app(NewsAggregatorService::class)->fetchAndStoreArticles();
-})->daily()->onSuccess(function () {
+})->hourly()->onSuccess(function () {
     Log::info('NewsAggregatorService executed successfully.');
 })->onFailure(function () {
     Log::error('NewsAggregatorService execution failed.');

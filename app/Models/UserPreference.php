@@ -15,4 +15,22 @@ class UserPreference extends Model
         'sources' => 'array',
         'categories' => 'array',
     ];
+
+    /**
+     * @param $request
+     * @return mixed
+     */
+    public static function updateUserPreference($request)
+    {
+        return UserPreference::updateOrCreate(
+            ['user_id' => $request->user()->id],
+            $request->all()
+        );
+    }
+
+    public static function getUserPreference($request)
+    {
+        // Get user preference
+        return UserPreference::where('user_id', $request->user()->id)->first();
+    }
 }

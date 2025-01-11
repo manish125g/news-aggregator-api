@@ -5,23 +5,23 @@ namespace App\Http\Controllers;
 use App\Http\Resources\ArticleResource;
 use App\Models\Article;
 use App\Traits\ApiResponder;
-use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class ArticleController extends Controller
 {
     use ApiResponder;
 
-    public function index(Request $request): \Illuminate\Http\Response|JsonResponse|\Illuminate\Http\Resources\Json\AnonymousResourceCollection
+    public function index(Request $request): JsonResponse|AnonymousResourceCollection
     {
         try {
             $request->validate([
                 'keyword' => 'nullable|string|max:255',
-                'category' => 'nullable|string|exists:articles,category',
-                'source' => 'nullable|string|exists:articles,source',
+                'category' => 'nullable|array|exists:articles,category',
+                'source' => 'nullable|array|exists:articles,source',
                 'start_date' => 'nullable|date',
                 'end_date' => 'nullable|date',
                 'sort_by' => 'nullable|in:title,published_at,category',
@@ -42,9 +42,11 @@ class ArticleController extends Controller
             // Check if caching has the data
             if (Cache::has($cacheKey)) {
                 $articles = Cache::get($cacheKey);
-            } else {
-                // Caching does not have data, query it and store in cache
+            } else { // Caching does not have data, query it and store in cache
                 $articles = Article::getArticles($request, $cacheKey);
+            }
+            if ($articles->isEmpty()) {
+                return $this->sendError("No articles found.", [], 404);
             }
             return ArticleResource::collection($articles);
         } catch (ValidationException $exception) {

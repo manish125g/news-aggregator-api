@@ -4,7 +4,7 @@ use Carbon\Carbon;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use App\Traits\ApiResponder;
+use Illuminate\Support\Facades\Log;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -16,7 +16,6 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->api(prepend: [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-//            'throttle:api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ]);
     })
@@ -38,7 +37,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 }
 
                 if ($e instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
-                    $response['message'] = 'Resource not found.';
+                    $response['message'] = 'Page not found.';
                     return response()->json($response, 404);
                 }
                 if ($e instanceof \Illuminate\Validation\ValidationException) {
@@ -50,12 +49,20 @@ return Application::configure(basePath: dirname(__DIR__))
                     $response['message'] = 'Resource not found.';
                     return response()->json($response, 404);
                 }
-                if($e instanceof \Illuminate\Database\UniqueConstraintViolationException) {
+                if ($e instanceof \Illuminate\Database\UniqueConstraintViolationException) {
                     $response['message'] = 'Database error.';
+                    Log::error($e->getMessage());
                     return response()->json($response, 500);
                 }
                 if ($e instanceof \Illuminate\Database\QueryException) {
                     $response['message'] = 'Database error.';
+                    Log::error($e->getMessage());
+                    return response()->json($response, 500);
+                }
+                // For handling all other type of errors
+                if ($e instanceof Exception) {
+                    $response['message'] = "Something went wrong.";
+                    Log::error($e->getMessage());
                     return response()->json($response, 500);
                 }
             }

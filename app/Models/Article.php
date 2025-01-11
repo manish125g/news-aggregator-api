@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Cache;
 class Article extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'author', 'title', 'source', 'source_url', 'description', 'keywords', 'category', 'image_url', 'content', 'published_at'
     ];
@@ -27,11 +28,11 @@ class Article extends Model
         }
 
         if ($request->has('category')) {
-            $query->where('category', $request->category);
+            $query->whereIn('category', $request->category);
         }
 
         if ($request->has('source')) {
-            $query->where('source', $request->source);
+            $query->whereIn('source', $request->source);
         }
 
         if ($request->has('start_date') && $request->has('end_date')) {
@@ -52,6 +53,27 @@ class Article extends Model
 
         return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($query, $sortBy, $sortOrder) {
             return $query->orderBy($sortBy, $sortOrder)->paginate(10);
+        });
+    }
+
+    public static function getUserPersonalizedFeeds(UserPreference $preference, string $cacheKey)
+    {
+        $query = Article::query();
+
+        if ($preference->sources) {
+            $query->whereIn('source', $preference->sources);
+        }
+
+        if ($preference->categories) {
+            $query->whereIn('category', $preference->categories);
+        }
+
+        if ($preference->authors) {
+            $query->whereIn('author', $preference->authors);
+        }
+
+        return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($query) {
+            return $query->orderBy('published_at', 'desc')->paginate(10);
         });
     }
 }
