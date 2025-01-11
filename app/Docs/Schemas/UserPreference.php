@@ -26,9 +26,7 @@ namespace App\Docs\Schemas;
  *         type="array",
  *         description="Preferred authors of the user",
  *         @OA\Items(type="string", example="author_1")
- *     ),
- *     @OA\Property(property="created_at", type="string", format="date-time", description="Timestamp when the preference was created", example="2025-01-10T10:00:00Z"),
- *     @OA\Property(property="updated_at", type="string", format="date-time", description="Timestamp when the preference was last updated", example="2025-01-11T12:00:00Z")
+ *     )
  * )
  */
 final class UserPreference

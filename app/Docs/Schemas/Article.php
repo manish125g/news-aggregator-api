@@ -19,9 +19,7 @@ namespace App\Docs\Schemas;
  *     @OA\Property(property="image_url", type="string", format="uri", nullable=true, description="Image URL associated with the article", example="https://example.com/image.jpg"),
  *     @OA\Property(property="content", type="string", description="Full content of the article", example="This is the content of the article..."),
  *     @OA\Property(property="published_at", type="string", format="date-time", description="Published date and time of the article", example="2025-01-11T14:30:00Z"),
- *     @OA\Property(property="status", type="string", enum={"draft", "published", "archived"}, description="Status of the article", example="published"),
- *     @OA\Property(property="created_at", type="string", format="date-time", description="Date and time when the article was created", example="2025-01-10T10:00:00Z"),
- *     @OA\Property(property="updated_at", type="string", format="date-time", description="Date and time when the article was last updated", example="2025-01-11T12:00:00Z")
+ *     @OA\Property(property="status", type="string", enum={"draft", "published", "archived"}, description="Status of the article", example="published")
  * )
  */
 final class Article
